@@ -30,16 +30,20 @@ def evolve(target,start=None):
     target, start = target.lower(), start.lower()
 
     c = start
-    e= 0
+    e= 1
+    best = mutate(c,5)
+    best_d = t_dist(best,target)
     while c != target:
-        e+=1
-        best = mutate(c,5)
-        best_d = t_dist(best,target)
-        for i in range(500):
+        while True:
+            e+=1
+
+            #works best with SLIGHT mutation
             n = mutate(c,1)
             n_d = t_dist(n,target)
+            
             if n_d < best_d:
                 best, best_d = n, n_d
+                break
         print('%s: %s' % (e,best)); c= best
-        
+
 evolve(test)
