@@ -1,4 +1,3 @@
-chars = 'abcdefghijklmnopqrstuvwxyz '
 """
 -----------------------------------------
 Text evolution - a demonstration of Richard Dawkin's Weasel program.
