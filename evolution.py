@@ -54,7 +54,7 @@ class Evolver:
         
         return result
 
-    def evolve(self, mutations = 10, mLim = 10, mProb = 0.1, genLim = 9999, printing = False):
+    def evolve(self, mutations = 10, mLim = 10, mProb = 0.1, genLim = 50000, printing = False):
         """
         Evolves the start string towards the target string
         (mutates working text a given number of times for each generation,
