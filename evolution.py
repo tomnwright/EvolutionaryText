@@ -1,45 +1,116 @@
 chars = 'abcdefghijklmnopqrstuvwxyz '
-import random
-test = 'Methinks it is a weasel'
+"""
+-----------------------------------------
+Text evolution - a demonstration of Richard Dawkin's Weasel program.
+-----------------------------------------
 
-def dist(a,b):
-    n =  abs(chars.index(b)-chars.index(a))
-    if n<=13:
-        return n
-    else:
-        return 27-n
-def t_dist(current, target):
-    n = 0
-    for e,i in enumerate(current):
-        n += dist(i, target[e])
-    return n
+https://en.wikipedia.org/wiki/Weasel_program
 
-def mutate(c,lim):
-    n = ""
-    for i in c:
-        index = (chars.index(i) + random.randint(lim*-1,lim))% 27
-        n += chars[index]
-    return n
+Do you see yonder cloud that's almost in shape of a camel?
+By the mass, and 'tis like a camel, indeed.
+Methinks it is like a weasel.
+"""
 
-def evolve(target,start=None):
-    #input validation
-    if not start:
-        start = 'a' * len(target)
-    if len(target) != len(start):
-        raise Exception('[length] target != start')
-    target, start = target.lower(), start.lower()
+import string, random
+from tools import Pool
+from tools import printIf
 
-    c = start
-    e= 0
-    while c != target:
-        e+=1
-        best = mutate(c,5)
-        best_d = t_dist(best,target)
-        for i in range(500):
-            n = mutate(c,1)
-            n_d = t_dist(n,target)
-            if n_d < best_d:
-                best, best_d = n, n_d
-        print('%s: %s' % (e,best)); c= best
+class Evolver:
+    """
+    Evolves a start string to a target string through random mutation.
+    Start and target must be of same length (currently).
+    """
+    
+    def __init__(self, base, target, start = None):
+        self.base = base
+
+        self.target = target
+        self.start  = start
+
+        if start == None:
+            self.start = 'a' * len(target)
+
+    def mutate(self, target, limit, prob):
+
+        """
+        Copies the letters of a target string, and may mutate each based on given probability
+
+        Arguments:
+        target -- string to be mutated
+        limit  -- max mutation distance for each letter (in either direction)
+        prob   -- probability of mutation for each letter
+        """
+
+        result = ''
+
+        for char in target:
+            
+            randomMut = random.randint(0,1000)
+            if randomMut > (prob * 1000):
+                result += char
+                continue
+
+            movement = random.randint(-limit, limit)
+            result += self.base.MoveChar(char, movement)
         
-evolve(test)
+        return result
+
+    def evolve(self, mutations = 10, mLim = 10, mProb = 0.1, genLim = 9999, printing = False):
+        """
+        Evolves the start string towards the target string
+        (mutates working text a given number of times for each generation,
+        and chooses the best if better than current)
+
+        Returns number of generations after which target was reached 
+
+        Keyword arguments:
+        mutations -- number of mutations per generation
+        mLim      -- value passed to limit in mutate()
+        mProb     -- value passed to prob in mutate()
+        genLim    -- limit on the number of generations
+        printing  -- whether each generation is printed to console
+        """
+
+        generation = 0
+        
+        current = self.start
+        currentDist =  self.base.TextDistance(current, self.target)
+        
+        while current != self.target and generation < genLim:
+            #mutate
+            best = currentDist
+            besttext = current
+
+            original = current
+
+            for i in range(mutations):
+
+                mutation = self.mutate(original, mLim, mProb)
+
+                dist = self.base.TextDistance(mutation, self.target)
+
+                if dist < best :
+                    best = dist
+                    besttext = mutation
+                    current = mutation
+
+        
+            generation += 1
+            currentDist =  self.base.TextDistance(current, self.target)
+
+            printIf(f"Generation {generation}: {current}, distance {currentDist}", printing)
+            
+        
+        print(f"FINISHED, {generation} generations")
+        return generation
+
+                
+
+
+if __name__ == '__main__':
+
+    pool = Pool(string.ascii_letters + ' ')
+    evolver = Evolver(pool, 'Methinks it is like a weasel')
+
+    evolver.evolve(printing = True)
+    
